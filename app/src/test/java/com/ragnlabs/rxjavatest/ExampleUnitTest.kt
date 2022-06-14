@@ -35,10 +35,47 @@ class ExampleUnitTest {
     fun `Cria um observable que emite items do metodo fromIterable`() {
         Observable.fromArray(listOf("Google", "Microsoft", "Apple"))
             .subscribe(
-                { itemIterabled -> println(itemIterabled) },          // onNext
-                { e -> println("Erro") }, // onError
+                { itemIterabled -> println(itemIterabled) }, // onNext
+                { error -> println("Error:: ${error.message}") }, // onError
                 { println("Complete") }   // onComplete
             )
     }
+
+    @SuppressLint("CheckResult")
+    @Test
+    fun `Cria um observable create com lista normal`() {
+        getObservableFromList(
+            listOf(
+                "Lino", "Cláudio", "Veloso", "Junior"
+            )
+        ).subscribe { name -> println(name) }
+    }
+
+    @SuppressLint("CheckResult")
+    @Test
+    fun `Cria um observable create com lista com items vazios`() {
+        getObservableFromList(
+            listOf(
+                "Lino", "Cláudio", "", ""
+            )
+        ).subscribe(
+            { name -> println(name) }, // onNext
+            { errorMessage -> println("Deu erro! A mensagem de erro é: ${errorMessage.message}") }, // onError
+        )
+    }
+
+    private fun getObservableFromList(list: List<String>) =
+        Observable.create<String> { emitter ->
+            list.forEach { name ->
+                if (name.isEmpty()) {
+                    emitter.onError(
+                        Exception("Foi enviado algum valor em branco.")
+                    )
+                }
+                emitter.onNext(name)
+            }
+            emitter.onComplete()
+        }
+
 
 }
